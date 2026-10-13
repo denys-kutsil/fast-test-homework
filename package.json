@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "How we create a fast-test architecture from scratch.",
   "keywords": [],
-  "main": "src/index.js",
+  "main": "src/index.tsx",
   "dependencies": {
     "mobx": "6.3.10",
     "mobx-react": "7.2.1",
@@ -12,12 +12,18 @@
     "react-scripts": "3.0.1"
   },
   "devDependencies": {
-    "typescript": "3.3.3"
+    "@types/jest": "^24.9.1",
+    "@types/node": "^16.18.126",
+    "@types/react": "^16.14.70",
+    "@types/react-dom": "^16.9.25",
+    "cross-env": "^7.0.3",
+    "typescript": "^4.9.5"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "test": "react-scripts test --env=jsdom",
+    "typecheck": "tsc --noEmit",
     "eject": "react-scripts eject"
   },
   "browserslist": [

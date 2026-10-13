@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
-// import { observer } from "mobx-react";
 
 import "./styles.css";
 import booksRepository from "./Books/Books.repository";
 
 function App() {
-  const [list, setList] = useState([]);
+  const [list, setList] = useState<any[]>([]);
 
   React.useEffect(() => {
     async function load() {
@@ -34,7 +33,5 @@ function App() {
   );
 }
 
-const ObservedApp = App;
-
 const rootElement = document.getElementById("root");
-ReactDOM.render(<ObservedApp />, rootElement);
+ReactDOM.render(<App />, rootElement);
