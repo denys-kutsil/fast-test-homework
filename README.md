@@ -99,9 +99,10 @@ CI=true npm test
 classes with hand-written fakes. Jest itself comes bundled inside `react-scripts`, so
 nothing had to be installed to make this work.
 
-The one test that does mount React is `useController`, which has to verify mount and
-unmount behaviour. It uses `act()` with `react-dom/test-utils` rather than pulling in
-another dependency.
+Two suites do mount React, because they test the React seams themselves: `useController`,
+which has to observe mount and unmount, and `useServices`, which has to fail outside a
+provider. Both use `act()` with `react-dom/test-utils` rather than pulling in another
+dependency.
 
 ## Notes on the API
 
