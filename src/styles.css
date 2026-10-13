@@ -1,8 +1,28 @@
-.App {
-  font-family: arial;
-  text-align: center;
+/* hidden only sets display:none through the user-agent stylesheet, so any
+   display rule of ours would silently override it. */
+[hidden] {
+  display: none !important;
 }
 
 body {
   font-family: arial;
+  margin: 0;
+}
+
+.books-page {
+  padding: 16px;
+}
+
+.books-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.books-list li {
+  padding: 4px 0;
+}
+
+.error {
+  color: #b00020;
 }

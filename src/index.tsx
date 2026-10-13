@@ -1,46 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 import ReactDOM from "react-dom";
 
 import "./styles.css";
-import { ServicesContext, useServices } from "./Shared/di/ServicesContext";
+import "./Shared/lib/mobxConfig";
+import { ServicesContext } from "./Shared/di/ServicesContext";
 import { createServices } from "./Shared/di/services";
-import { Book } from "./Books/model/book.types";
-
-function App() {
-  const { booksRepository } = useServices();
-  const [list, setList] = useState<Book[]>([]);
-
-  React.useEffect(() => {
-    async function load() {
-      const books = await booksRepository.getAll();
-      setList(books);
-    }
-    load();
-  }, [booksRepository]);
-
-  return (
-    <div>
-      {list.map((book) => (
-        <div key={book.id}>
-          {book.author}: {book.name}
-        </div>
-      ))}
-      <button
-        onClick={() => {
-          alert("TBD");
-        }}
-      >
-        Add
-      </button>
-    </div>
-  );
-}
-
-const rootElement = document.getElementById("root");
+import { BooksPage } from "./Books/BooksPage/BooksPage";
 
 ReactDOM.render(
   <ServicesContext.Provider value={createServices()}>
-    <App />
+    <BooksPage />
   </ServicesContext.Provider>,
-  rootElement
+  document.getElementById("root")
 );
