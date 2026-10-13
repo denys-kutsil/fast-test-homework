@@ -2,13 +2,12 @@ import React, { useState } from "react";
 import ReactDOM from "react-dom";
 
 import "./styles.css";
-import { ApiGateway } from "./Shared/api/ApiGateway";
-import { BooksRepository } from "./Books/model/Books.repository";
+import { ServicesContext, useServices } from "./Shared/di/ServicesContext";
+import { createServices } from "./Shared/di/services";
 import { Book } from "./Books/model/book.types";
 
-const booksRepository = new BooksRepository(new ApiGateway());
-
 function App() {
+  const { booksRepository } = useServices();
   const [list, setList] = useState<Book[]>([]);
 
   React.useEffect(() => {
@@ -17,7 +16,7 @@ function App() {
       setList(books);
     }
     load();
-  }, []);
+  }, [booksRepository]);
 
   return (
     <div>
@@ -38,4 +37,10 @@ function App() {
 }
 
 const rootElement = document.getElementById("root");
-ReactDOM.render(<App />, rootElement);
+
+ReactDOM.render(
+  <ServicesContext.Provider value={createServices()}>
+    <App />
+  </ServicesContext.Provider>,
+  rootElement
+);
