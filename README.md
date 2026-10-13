@@ -94,7 +94,7 @@ no re-renders of its own — granular updates stay the job of `observer`.
 CI=true npm test
 ```
 
-71 tests, well under a second. There is no React Testing Library, no enzyme and no
+71 tests, in a few seconds. There is no React Testing Library, no enzyme and no
 `jest.mock` on modules: controllers, the store and the repository are tested as ordinary
 classes with hand-written fakes. Jest itself comes bundled inside `react-scripts`, so
 nothing had to be installed to make this work.
