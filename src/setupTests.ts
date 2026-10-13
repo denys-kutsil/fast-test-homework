@@ -1,1 +1,1 @@
-import "./Shared/lib/mobxConfig";
+import "shared/lib/mobxConfig";

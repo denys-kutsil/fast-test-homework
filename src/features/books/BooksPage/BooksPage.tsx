@@ -1,8 +1,9 @@
 import React from "react";
 import { observer } from "mobx-react";
 
-import { useController } from "../../Shared/lib/useController";
-import { BooksList } from "../BooksList/BooksList";
+import { useController } from "shared/lib/useController";
+import { AddBookForm } from "features/books/AddBookForm/AddBookForm";
+import { BooksList } from "features/books/BooksList/BooksList";
 import { BooksPageController } from "./BooksPage.controller";
 
 export const BooksPage = observer(() => {
@@ -10,6 +11,7 @@ export const BooksPage = observer(() => {
 
   return (
     <section className="books-page">
+      <AddBookForm />
       <p hidden={controller.isLoaderHidden}>Loading…</p>
       <p hidden={controller.isErrorHidden} className="error">
         {controller.error}

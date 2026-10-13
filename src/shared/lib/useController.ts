@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Services } from "../di/services";
-import { useServices } from "../di/ServicesContext";
+import { Services } from "shared/di/services";
+import { useServices } from "shared/di/ServicesContext";
 
 export interface Controller {
   init(): void;

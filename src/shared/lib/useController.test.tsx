@@ -2,8 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { act } from "react-dom/test-utils";
 
-import { ServicesContext } from "../di/ServicesContext";
-import { Services } from "../di/services";
+import { ServicesContext } from "shared/di/ServicesContext";
+import { Services } from "shared/di/services";
 import { Controller, useController } from "./useController";
 
 let created: SpyController[] = [];

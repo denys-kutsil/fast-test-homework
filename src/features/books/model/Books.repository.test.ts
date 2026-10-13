@@ -1,4 +1,4 @@
-import { HttpGateway } from "../../Shared/api/HttpGateway";
+import { HttpGateway } from "shared/api/HttpGateway";
 import { BooksRepository } from "./Books.repository";
 import { BookDto } from "./book.types";
 

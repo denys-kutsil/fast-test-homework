@@ -26,3 +26,22 @@ body {
 .error {
   color: #b00020;
 }
+
+.add-book-form {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.text-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.text-field__label {
+  font-size: 12px;
+  color: #555;
+}

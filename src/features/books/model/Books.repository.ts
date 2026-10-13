@@ -1,5 +1,5 @@
-import { API_USER } from "../../Shared/api/config";
-import { HttpGateway, RequestOptions } from "../../Shared/api/HttpGateway";
+import { API_USER } from "shared/api/config";
+import { HttpGateway, RequestOptions } from "shared/api/HttpGateway";
 import { Book, BookDto, NewBook } from "./book.types";
 
 interface AddBookResultDto {

@@ -1,7 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react";
 
-import { Book } from "../model/book.types";
+import { Book } from "features/books/model/book.types";
 
 interface BooksListProps {
   items: Book[];

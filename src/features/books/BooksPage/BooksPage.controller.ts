@@ -1,23 +1,26 @@
 import { makeAutoObservable, runInAction } from "mobx";
 
-import { Services } from "../../Shared/di/services";
-import { Controller } from "../../Shared/lib/useController";
-import { BooksRepository } from "../model/Books.repository";
-import { Book } from "../model/book.types";
+import { Services } from "shared/di/services";
+import { Controller } from "shared/lib/useController";
+import { BooksStore } from "features/books/model/Books.store";
+import { Book } from "features/books/model/book.types";
 
 const LOAD_FAILED = "Could not load the books. Please try again.";
 
 export class BooksPageController implements Controller {
-  items: Book[] = [];
   isLoading = false;
   error = "";
 
-  private readonly repository: BooksRepository;
+  private readonly store: BooksStore;
   private pending: AbortController | null = null;
 
   constructor(services: Services) {
-    this.repository = services.booksRepository;
+    this.store = services.booksStore;
     makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  get items(): Book[] {
+    return this.store.allBooks;
   }
 
   // Inverted on purpose: the view binds these straight to the hidden
@@ -51,14 +54,13 @@ export class BooksPageController implements Controller {
     this.error = "";
 
     try {
-      const items = await this.repository.getAll({ signal: request.signal });
+      await this.store.reload({ signal: request.signal });
 
       if (request.signal.aborted) {
         return;
       }
 
       runInAction(() => {
-        this.items = items;
         this.isLoading = false;
         this.pending = null;
       });
