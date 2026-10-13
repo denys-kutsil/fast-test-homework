@@ -3,13 +3,13 @@ import ReactDOM from "react-dom";
 
 import "./styles.css";
 import "shared/lib/mobxConfig";
+import { App } from "app/App";
 import { ServicesContext } from "shared/di/ServicesContext";
 import { createServices } from "shared/di/services";
-import { BooksPage } from "features/books/BooksPage/BooksPage";
 
 ReactDOM.render(
   <ServicesContext.Provider value={createServices()}>
-    <BooksPage />
+    <App />
   </ServicesContext.Provider>,
   document.getElementById("root")
 );
