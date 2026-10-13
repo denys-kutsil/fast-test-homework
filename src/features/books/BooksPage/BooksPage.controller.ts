@@ -3,6 +3,7 @@ import { makeAutoObservable, runInAction } from "mobx";
 import { SegmentedOption } from "components/SegmentedControl/SegmentedControl.types";
 import { Services } from "shared/di/services";
 import { Controller } from "shared/lib/useController";
+import { RequestScope } from "shared/lib/RequestScope";
 import { BooksStore } from "features/books/model/Books.store";
 import { Book, BooksScope } from "features/books/model/book.types";
 
@@ -14,7 +15,7 @@ export class BooksPageController implements Controller {
   error = "";
 
   private readonly store: BooksStore;
-  private pending: AbortController | null = null;
+  private readonly request = new RequestScope();
 
   constructor(services: Services) {
     this.store = services.booksStore;
@@ -57,45 +58,29 @@ export class BooksPageController implements Controller {
   }
 
   dispose(): void {
-    this.abortPending();
+    this.request.abort();
   }
 
   async load(): Promise<void> {
-    this.abortPending();
-
-    const request = new AbortController();
-    this.pending = request;
+    const options = this.request.start();
     this.isLoading = true;
     this.error = "";
 
     try {
-      await this.store.reload({ signal: request.signal });
+      await this.store.reload(options);
 
-      if (request.signal.aborted) {
-        return;
+      if (this.request.settle(options)) {
+        runInAction(() => {
+          this.isLoading = false;
+        });
       }
-
-      runInAction(() => {
-        this.isLoading = false;
-        this.pending = null;
-      });
     } catch (e) {
-      if (request.signal.aborted) {
-        return;
+      if (this.request.settle(options)) {
+        runInAction(() => {
+          this.error = LOAD_FAILED;
+          this.isLoading = false;
+        });
       }
-
-      runInAction(() => {
-        this.error = LOAD_FAILED;
-        this.isLoading = false;
-        this.pending = null;
-      });
-    }
-  }
-
-  private abortPending(): void {
-    if (this.pending !== null) {
-      this.pending.abort();
-      this.pending = null;
     }
   }
 }

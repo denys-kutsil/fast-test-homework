@@ -1,15 +1,9 @@
-import { Services } from "shared/di/services";
-import { BooksRepository } from "features/books/model/Books.repository";
-import { BooksStore } from "features/books/model/Books.store";
-import { FakeBooksRepository, aBook } from "features/books/model/__fixtures__/FakeBooksRepository";
+import { aBook, makeTestServices } from "features/books/model/__fixtures__/FakeBooksRepository";
 import { AddBookFormController } from "./AddBookForm.controller";
 
 const makeController = () => {
-  const repository = new FakeBooksRepository();
-  const booksStore = new BooksStore((repository as unknown) as BooksRepository);
-  const services = ({ booksRepository: repository, booksStore } as unknown) as Services;
-
-  return { repository, store: booksStore, controller: new AddBookFormController(services) };
+  const { repository, store, services } = makeTestServices();
+  return { repository, store, controller: new AddBookFormController(services) };
 };
 
 const fillIn = (controller: AddBookFormController) => {
@@ -114,7 +108,7 @@ describe("AddBookFormController", () => {
     controller.submit();
     controller.dispose();
 
-    expect(repository.readCalls[0].signal!.aborted).toBe(true);
+    expect(repository.requests[0].signal!.aborted).toBe(true);
   });
 
   it("does not report an error for a submission aborted on dispose", async () => {

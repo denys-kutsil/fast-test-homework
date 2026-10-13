@@ -1,5 +1,5 @@
 import { HttpGateway } from "shared/api/HttpGateway";
-import { BooksRepository } from "./Books.repository";
+import { HttpBooksRepository } from "./Books.repository";
 import { BookDto } from "./book.types";
 
 class FakeHttpGateway implements HttpGateway {
@@ -31,7 +31,7 @@ const created: BookDto = { name: "New Book", author: "New Author" };
 const repositoryWith = (dtos: BookDto[]) => {
   const http = new FakeHttpGateway();
   http.getResult = dtos;
-  return { http, repository: new BooksRepository(http, "tester") };
+  return { http, repository: new HttpBooksRepository(http, "tester") };
 };
 
 describe("BooksRepository", () => {
@@ -66,7 +66,7 @@ describe("BooksRepository", () => {
 
     const books = await repository.getAll();
 
-    expect(books[0].id).toBeTruthy();
+    expect(books[0].id).toBe("local::New Book:New Author:0");
   });
 
   it("derives the same id every time the same response is mapped", async () => {

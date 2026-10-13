@@ -2,6 +2,17 @@ import { API_USER } from "shared/api/config";
 import { HttpGateway, RequestOptions } from "shared/api/HttpGateway";
 import { Book, BookDto, NewBook } from "./book.types";
 
+/**
+ * What the rest of the app is allowed to assume about book storage. Depending
+ * on this rather than on the class keeps test doubles honest: a fake has to
+ * implement the same contract or it will not compile.
+ */
+export interface BooksRepository {
+  getAll(options?: RequestOptions): Promise<Book[]>;
+  getPrivate(options?: RequestOptions): Promise<Book[]>;
+  add(book: NewBook, options?: RequestOptions): Promise<void>;
+}
+
 interface AddBookResultDto {
   status?: string;
 }
@@ -18,7 +29,7 @@ const toBook = (dto: BookDto, index: number): Book => ({
   author: dto.author
 });
 
-export class BooksRepository {
+export class HttpBooksRepository implements BooksRepository {
   private readonly http: HttpGateway;
   private readonly booksPath: string;
 

@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from "mobx";
 
 import { Services } from "shared/di/services";
 import { Controller } from "shared/lib/useController";
+import { RequestScope } from "shared/lib/RequestScope";
 import { BooksRepository } from "features/books/model/Books.repository";
 import { BooksStore } from "features/books/model/Books.store";
 
@@ -15,7 +16,7 @@ export class AddBookFormController implements Controller {
 
   private readonly repository: BooksRepository;
   private readonly store: BooksStore;
-  private pending: AbortController | null = null;
+  private readonly request = new RequestScope();
 
   constructor(services: Services) {
     this.repository = services.booksRepository;
@@ -44,11 +45,11 @@ export class AddBookFormController implements Controller {
   }
 
   init(): void {
-    this.error = "";
+    // Nothing to load: the form starts empty.
   }
 
   dispose(): void {
-    this.abortPending();
+    this.request.abort();
   }
 
   async submit(): Promise<void> {
@@ -56,46 +57,32 @@ export class AddBookFormController implements Controller {
       return;
     }
 
-    const request = new AbortController();
+    const options = this.request.start();
     const book = { name: this.name.trim(), author: this.author.trim() };
 
-    this.pending = request;
     this.isSubmitting = true;
     this.error = "";
 
     try {
-      await this.repository.add(book, { signal: request.signal });
+      await this.repository.add(book, options);
       // Re-read from the API instead of appending locally: the response
       // carries no id, so anything added by hand would be invented data.
-      await this.store.reload({ signal: request.signal });
+      await this.store.reload(options);
 
-      if (request.signal.aborted) {
-        return;
+      if (this.request.settle(options)) {
+        runInAction(() => {
+          this.name = "";
+          this.author = "";
+          this.isSubmitting = false;
+        });
       }
-
-      runInAction(() => {
-        this.name = "";
-        this.author = "";
-        this.isSubmitting = false;
-        this.pending = null;
-      });
     } catch (e) {
-      if (request.signal.aborted) {
-        return;
+      if (this.request.settle(options)) {
+        runInAction(() => {
+          this.error = ADD_FAILED;
+          this.isSubmitting = false;
+        });
       }
-
-      runInAction(() => {
-        this.error = ADD_FAILED;
-        this.isSubmitting = false;
-        this.pending = null;
-      });
-    }
-  }
-
-  private abortPending(): void {
-    if (this.pending !== null) {
-      this.pending.abort();
-      this.pending = null;
     }
   }
 }

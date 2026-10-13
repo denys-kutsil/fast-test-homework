@@ -1,47 +1,50 @@
-import { BooksRepository } from "./Books.repository";
-import { BooksStore } from "./Books.store";
-import { FakeBooksRepository, aBook } from "features/books/model/__fixtures__/FakeBooksRepository";
-
-const makeStore = () => {
-  const repository = new FakeBooksRepository();
-  const store = new BooksStore((repository as unknown) as BooksRepository);
-  return { repository, store };
-};
+import { aBook, makeTestServices } from "./__fixtures__/FakeBooksRepository";
 
 describe("BooksStore", () => {
   it("starts empty with a zero counter", () => {
-    const { store } = makeStore();
+    const { store } = makeTestServices();
 
     expect(store.allBooks).toEqual([]);
+    expect(store.privateBooks).toEqual([]);
     expect(store.privateCount).toBe(0);
   });
 
   it("fills both lists on reload", async () => {
-    const { repository, store } = makeStore();
+    const { repository, store } = makeTestServices();
 
     const reloading = store.reload();
-    await repository.succeedReads([aBook("1"), aBook("2")]);
+    await repository.succeedReads([aBook("1"), aBook("2"), aBook("3")], [aBook("3")]);
     await reloading;
 
-    expect(store.allBooks.length).toBe(2);
-    expect(store.privateBooks.length).toBe(2);
+    expect(store.allBooks.map((book) => book.id)).toEqual(["1", "2", "3"]);
+    expect(store.privateBooks.map((book) => book.id)).toEqual(["3"]);
   });
 
-  it("counts the private books only", async () => {
-    const { repository, store } = makeStore();
+  it("counts the private books, not every book it holds", async () => {
+    const { repository, store } = makeTestServices();
 
     const reloading = store.reload();
-    await repository.succeedReads([aBook("1")]);
+    await repository.succeedReads([aBook("1"), aBook("2"), aBook("3")], [aBook("3")]);
     await reloading;
 
-    expect(store.privateCount).toBe(store.privateBooks.length);
+    expect(store.privateCount).toBe(1);
+  });
+
+  it("passes the request options through to both reads", async () => {
+    const { repository, store } = makeTestServices();
+    const options = { signal: {} as AbortSignal };
+
+    const reloading = store.reload(options);
+    await repository.succeedReads([]);
+    await reloading;
+
+    expect(repository.requests).toEqual([options, options]);
   });
 
   it("lets a failed reload surface to the caller", async () => {
-    const { repository, store } = makeStore();
+    const { repository, store } = makeTestServices();
 
-    const reloading = store.reload();
-    const settled = reloading.then(() => "resolved").catch(() => "rejected");
+    const settled = store.reload().then(() => "resolved", () => "rejected");
     await repository.failReads();
 
     expect(await settled).toBe("rejected");

@@ -1,15 +1,9 @@
-import { Services } from "shared/di/services";
-import { BooksRepository } from "features/books/model/Books.repository";
-import { BooksStore } from "features/books/model/Books.store";
-import { FakeBooksRepository, aBook } from "features/books/model/__fixtures__/FakeBooksRepository";
+import { aBook, makeTestServices } from "features/books/model/__fixtures__/FakeBooksRepository";
 import { AppHeaderController } from "./AppHeader.controller";
 
 const makeController = () => {
-  const repository = new FakeBooksRepository();
-  const booksStore = new BooksStore((repository as unknown) as BooksRepository);
-  const services = ({ booksRepository: repository, booksStore } as unknown) as Services;
-
-  return { repository, store: booksStore, controller: new AppHeaderController(services) };
+  const { repository, store, services } = makeTestServices();
+  return { repository, store, controller: new AppHeaderController(services) };
 };
 
 describe("AppHeaderController", () => {

@@ -1,15 +1,9 @@
-import { Services } from "shared/di/services";
-import { BooksRepository } from "features/books/model/Books.repository";
-import { BooksStore } from "features/books/model/Books.store";
-import { FakeBooksRepository, aBook } from "features/books/model/__fixtures__/FakeBooksRepository";
+import { aBook, makeTestServices } from "features/books/model/__fixtures__/FakeBooksRepository";
 import { BooksPageController } from "./BooksPage.controller";
 
 const makeController = () => {
-  const repository = new FakeBooksRepository();
-  const booksStore = new BooksStore((repository as unknown) as BooksRepository);
-  const services = ({ booksRepository: repository, booksStore } as unknown) as Services;
-
-  return { repository, store: booksStore, controller: new BooksPageController(services) };
+  const { repository, store, services } = makeTestServices();
+  return { repository, store, controller: new BooksPageController(services) };
 };
 
 describe("BooksPageController", () => {
@@ -18,7 +12,7 @@ describe("BooksPageController", () => {
 
     controller.init();
 
-    expect(repository.readCalls.length).toBeGreaterThan(0);
+    expect(repository.requests.length).toBe(2);
   });
 
   it("shows the loader while the request is in flight", () => {
@@ -129,10 +123,10 @@ describe("BooksPageController", () => {
 
     controller.init();
     await repository.succeedReads([aBook("1")]);
-    const callsAfterLoad = repository.readCalls.length;
+    const callsAfterLoad = repository.requests.length;
     controller.setScope("private");
 
-    expect(repository.readCalls.length).toBe(callsAfterLoad);
+    expect(repository.requests.length).toBe(callsAfterLoad);
   });
 
   it("shows the empty message when the active scope has no books", async () => {
@@ -151,7 +145,7 @@ describe("BooksPageController", () => {
     controller.init();
     controller.dispose();
 
-    expect(repository.readCalls[0].signal!.aborted).toBe(true);
+    expect(repository.requests[0].signal!.aborted).toBe(true);
   });
 
   it("does not report an error for a request aborted on dispose", async () => {

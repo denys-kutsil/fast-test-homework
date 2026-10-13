@@ -1,4 +1,7 @@
 import { RequestOptions } from "shared/api/HttpGateway";
+import { Services } from "shared/di/services";
+import { BooksRepository } from "features/books/model/Books.repository";
+import { BooksStore } from "features/books/model/Books.store";
 import { Book, NewBook } from "features/books/model/book.types";
 
 export const aBook = (id: string): Book => ({
@@ -7,14 +10,16 @@ export const aBook = (id: string): Book => ({
   author: "Author"
 });
 
-export const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 /**
  * Hands out promises the test resolves by hand, so loading states can be
- * observed while a request is still in flight.
+ * observed while a request is still in flight. Implements BooksRepository, so
+ * it stops compiling the moment the real contract changes.
  */
-export class FakeBooksRepository {
-  readCalls: RequestOptions[] = [];
+export class FakeBooksRepository implements BooksRepository {
+  /** Options every call was made with, in order, reads and writes alike. */
+  requests: RequestOptions[] = [];
   addCalls: NewBook[] = [];
 
   private resolvers: Array<(books: Book[]) => void> = [];
@@ -28,7 +33,7 @@ export class FakeBooksRepository {
 
   add = (book: NewBook, options?: RequestOptions): Promise<void> => {
     this.addCalls.push(book);
-    this.readCalls.push(options as RequestOptions);
+    this.requests.push(options as RequestOptions);
     return new Promise<void>((resolve, reject) => {
       this.addResolve = resolve;
       this.addReject = reject;
@@ -64,10 +69,22 @@ export class FakeBooksRepository {
   };
 
   private read(options?: RequestOptions): Promise<Book[]> {
-    this.readCalls.push(options as RequestOptions);
+    this.requests.push(options as RequestOptions);
     return new Promise<Book[]>((resolve, reject) => {
       this.resolvers.push(resolve);
       this.rejecters.push(reject);
     });
   }
 }
+
+/**
+ * The service container every controller test is built on: a real store wired
+ * to a fake repository, so the store's own behaviour stays under test too.
+ */
+export const makeTestServices = () => {
+  const repository = new FakeBooksRepository();
+  const booksStore = new BooksStore(repository);
+  const services: Services = { booksRepository: repository, booksStore };
+
+  return { repository, store: booksStore, services };
+};

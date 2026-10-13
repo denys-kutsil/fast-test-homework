@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { act } from "react-dom/test-utils";
 
+import { makeTestServices } from "features/books/model/__fixtures__/FakeBooksRepository";
 import { ServicesContext } from "shared/di/ServicesContext";
 import { Services } from "shared/di/services";
 import { Controller, useController } from "./useController";
@@ -32,7 +33,7 @@ const Probe = () => {
   return null;
 };
 
-const services = ({ booksRepository: {} } as unknown) as Services;
+const { services } = makeTestServices();
 
 const render = (container: HTMLDivElement) => {
   act(() => {
