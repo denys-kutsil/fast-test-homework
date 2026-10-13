@@ -1,4 +1,4 @@
-import ApiGateway from "../Shared/ApiGateway.js";
+import { ApiGateway } from "../Shared/api/ApiGateway";
 import { API_USER } from "../Shared/api/config";
 
 const BOOKS_PATH = `/books/${API_USER}/`;
