@@ -33,13 +33,39 @@ describe("BooksPageController", () => {
     expect(controller.isLoaderHidden).toBe(true);
   });
 
-  it("reads its items straight from the store", async () => {
+  it("follows the store, so a reload is reflected without another init", async () => {
     const { repository, store, controller } = makeController();
 
     controller.init();
     await repository.succeedReads([aBook("1")]);
 
-    expect(controller.items).toBe(store.allBooks);
+    const reloading = store.reload();
+    await repository.succeedReads([aBook("1"), aBook("2")]);
+    await reloading;
+
+    expect(controller.items.map((item) => item.id)).toEqual(["1", "2"]);
+  });
+
+  it("builds the label so the view never has to compose one", async () => {
+    const { repository, controller } = makeController();
+
+    controller.init();
+    await repository.succeedReads([{ id: "7", name: "I, Robot", author: "Isaac Asimov" }]);
+
+    expect(controller.items).toEqual([{ id: "7", label: "Isaac Asimov: I, Robot" }]);
+  });
+
+  it("labels the books of the active scope", async () => {
+    const { repository, controller } = makeController();
+
+    controller.init();
+    await repository.succeedReads(
+      [{ id: "1", name: "Dune", author: "Herbert" }],
+      [{ id: "2", name: "The Hobbit", author: "Tolkien" }]
+    );
+    controller.setScope("private");
+
+    expect(controller.items).toEqual([{ id: "2", label: "Tolkien: The Hobbit" }]);
   });
 
   it("keeps the empty message hidden while loading", () => {

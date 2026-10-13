@@ -7,6 +7,7 @@ import { BooksRepository } from "features/books/model/Books.repository";
 import { BooksStore } from "features/books/model/Books.store";
 
 const ADD_FAILED = "Could not add the book. Please try again.";
+const REFRESH_FAILED = "Book added, but the list could not be refreshed.";
 
 export class AddBookFormController implements Controller {
   name = "";
@@ -65,21 +66,43 @@ export class AddBookFormController implements Controller {
 
     try {
       await this.repository.add(book, options);
+    } catch (e) {
+      if (this.request.settle(options)) {
+        runInAction(() => {
+          this.error = ADD_FAILED;
+          this.isSubmitting = false;
+        });
+      }
+      return;
+    }
+
+    // The book exists on the server from here on, so the fields are cleared
+    // before the refresh is even attempted. If the refresh then fails, the
+    // form is already empty and the message below says the book was saved,
+    // which is what stops the user from submitting it a second time.
+    if (options.signal!.aborted) {
+      return;
+    }
+
+    runInAction(() => {
+      this.name = "";
+      this.author = "";
+    });
+
+    try {
       // Re-read from the API instead of appending locally: the response
       // carries no id, so anything added by hand would be invented data.
       await this.store.reload(options);
 
       if (this.request.settle(options)) {
         runInAction(() => {
-          this.name = "";
-          this.author = "";
           this.isSubmitting = false;
         });
       }
     } catch (e) {
       if (this.request.settle(options)) {
         runInAction(() => {
-          this.error = ADD_FAILED;
+          this.error = REFRESH_FAILED;
           this.isSubmitting = false;
         });
       }

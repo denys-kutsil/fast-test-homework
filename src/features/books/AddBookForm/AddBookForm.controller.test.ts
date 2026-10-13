@@ -101,6 +101,71 @@ describe("AddBookFormController", () => {
     expect(controller.areFieldsDisabled).toBe(false);
   });
 
+  it("clears the form as soon as the book is saved, before the list refreshes", async () => {
+    const { repository, controller } = makeController();
+
+    fillIn(controller);
+    controller.submit();
+    await repository.confirmAdd();
+
+    expect(controller.name).toBe("");
+    expect(controller.author).toBe("");
+  });
+
+  it("says the book was saved when only the refresh fails", async () => {
+    const { repository, controller } = makeController();
+
+    fillIn(controller);
+    controller.submit();
+    await repository.confirmAdd();
+    await repository.failReads();
+
+    expect(controller.isErrorHidden).toBe(false);
+    expect(controller.error).toMatch(/added/i);
+    expect(controller.error).not.toMatch(/try again/i);
+  });
+
+  it("distinguishes a failed save from a failed refresh", async () => {
+    const failedSave = makeController();
+    fillIn(failedSave.controller);
+    failedSave.controller.submit();
+    await failedSave.repository.rejectAdd();
+
+    const failedRefresh = makeController();
+    fillIn(failedRefresh.controller);
+    failedRefresh.controller.submit();
+    await failedRefresh.repository.confirmAdd();
+    await failedRefresh.repository.failReads();
+
+    expect(failedRefresh.controller.error).not.toBe(failedSave.controller.error);
+  });
+
+  it("leaves the form empty when the refresh fails, so the book cannot be sent twice", async () => {
+    const { repository, controller } = makeController();
+
+    fillIn(controller);
+    controller.submit();
+    await repository.confirmAdd();
+    await repository.failReads();
+
+    expect(controller.name).toBe("");
+    expect(controller.author).toBe("");
+    expect(controller.isSubmitDisabled).toBe(true);
+    expect(controller.areFieldsDisabled).toBe(false);
+  });
+
+  it("still keeps the values when the save itself fails", async () => {
+    const { repository, controller } = makeController();
+
+    fillIn(controller);
+    controller.submit();
+    await repository.rejectAdd();
+
+    expect(controller.name).toBe("Dune");
+    expect(controller.author).toBe("Frank Herbert");
+    expect(controller.isSubmitDisabled).toBe(false);
+  });
+
   it("aborts an in-flight submission on dispose", () => {
     const { repository, controller } = makeController();
 

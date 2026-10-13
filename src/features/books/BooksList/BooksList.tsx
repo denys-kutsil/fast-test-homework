@@ -1,18 +1,12 @@
 import React from "react";
 import { observer } from "mobx-react";
 
-import { Book } from "features/books/model/book.types";
-
-interface BooksListProps {
-  items: Book[];
-}
+import { BooksListProps } from "./BooksList.types";
 
 export const BooksList = observer((props: BooksListProps) => (
   <ul className="books-list">
-    {props.items.map((book) => (
-      <li key={book.id}>
-        {book.author}: {book.name}
-      </li>
+    {props.items.map((item) => (
+      <li key={item.id}>{item.label}</li>
     ))}
   </ul>
 ));

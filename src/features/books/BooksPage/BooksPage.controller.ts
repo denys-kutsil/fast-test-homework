@@ -4,10 +4,16 @@ import { SegmentedOption } from "components/SegmentedControl/SegmentedControl.ty
 import { Services } from "shared/di/services";
 import { Controller } from "shared/lib/useController";
 import { RequestScope } from "shared/lib/RequestScope";
+import { BookListItem } from "features/books/BooksList/BooksList.types";
 import { BooksStore } from "features/books/model/Books.store";
 import { Book, BooksScope } from "features/books/model/book.types";
 
 const LOAD_FAILED = "Could not load the books. Please try again.";
+
+const toListItem = (book: Book): BookListItem => ({
+  id: book.id,
+  label: `${book.author}: ${book.name}`
+});
 
 export class BooksPageController implements Controller {
   scope: BooksScope = "all";
@@ -23,9 +29,12 @@ export class BooksPageController implements Controller {
   }
 
   // Both lists are already in the store after reload(), so switching scope is
-  // a local operation and never hits the network.
-  get items(): Book[] {
-    return this.scope === "private" ? this.store.privateBooks : this.store.allBooks;
+  // a local operation and never hits the network. The label is composed here
+  // rather than in the view: joining two fields is a calculation, and JSX is
+  // not allowed any.
+  get items(): BookListItem[] {
+    const books = this.scope === "private" ? this.store.privateBooks : this.store.allBooks;
+    return books.map(toListItem);
   }
 
   get scopeOptions(): Array<SegmentedOption<BooksScope>> {
