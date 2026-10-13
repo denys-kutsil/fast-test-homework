@@ -1,13 +1,15 @@
 import { makeAutoObservable, runInAction } from "mobx";
 
+import { SegmentedOption } from "components/SegmentedControl/SegmentedControl.types";
 import { Services } from "shared/di/services";
 import { Controller } from "shared/lib/useController";
 import { BooksStore } from "features/books/model/Books.store";
-import { Book } from "features/books/model/book.types";
+import { Book, BooksScope } from "features/books/model/book.types";
 
 const LOAD_FAILED = "Could not load the books. Please try again.";
 
 export class BooksPageController implements Controller {
+  scope: BooksScope = "all";
   isLoading = false;
   error = "";
 
@@ -19,8 +21,21 @@ export class BooksPageController implements Controller {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
+  // Both lists are already in the store after reload(), so switching scope is
+  // a local operation and never hits the network.
   get items(): Book[] {
-    return this.store.allBooks;
+    return this.scope === "private" ? this.store.privateBooks : this.store.allBooks;
+  }
+
+  get scopeOptions(): Array<SegmentedOption<BooksScope>> {
+    return [
+      { value: "all", label: "All books", checked: this.scope === "all" },
+      { value: "private", label: "Private books", checked: this.scope === "private" }
+    ];
+  }
+
+  setScope(scope: BooksScope): void {
+    this.scope = scope;
   }
 
   // Inverted on purpose: the view binds these straight to the hidden

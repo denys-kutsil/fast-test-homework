@@ -45,11 +45,13 @@ export class FakeBooksRepository {
     await flush();
   };
 
-  succeedReads = async (books: Book[]) => {
+  // reload() always asks for getAll first and getPrivate second, so the pending
+  // reads alternate between the two lists.
+  succeedReads = async (all: Book[], personal: Book[] = all) => {
     const pending = this.resolvers;
     this.resolvers = [];
     this.rejecters = [];
-    pending.forEach((resolve) => resolve(books));
+    pending.forEach((resolve, index) => resolve(index % 2 === 0 ? all : personal));
     await flush();
   };
 

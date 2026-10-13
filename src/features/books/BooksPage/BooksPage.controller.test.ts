@@ -84,6 +84,67 @@ describe("BooksPageController", () => {
     expect(controller.isEmptyHidden).toBe(true);
   });
 
+  it("starts on the all-books scope", () => {
+    const { controller } = makeController();
+
+    expect(controller.scope).toBe("all");
+    expect(controller.scopeOptions[0].checked).toBe(true);
+    expect(controller.scopeOptions[1].checked).toBe(false);
+  });
+
+  it("shows the private books after switching scope", async () => {
+    const { repository, controller } = makeController();
+
+    controller.init();
+    await repository.succeedReads([aBook("1"), aBook("2")], [aBook("2")]);
+    controller.setScope("private");
+
+    expect(controller.items.map((book) => book.id)).toEqual(["2"]);
+  });
+
+  it("marks the active scope as checked", async () => {
+    const { repository, controller } = makeController();
+
+    controller.init();
+    await repository.succeedReads([aBook("1")]);
+    controller.setScope("private");
+
+    expect(controller.scopeOptions[0].checked).toBe(false);
+    expect(controller.scopeOptions[1].checked).toBe(true);
+  });
+
+  it("switches back to all books", async () => {
+    const { repository, controller } = makeController();
+
+    controller.init();
+    await repository.succeedReads([aBook("1"), aBook("2")], [aBook("2")]);
+    controller.setScope("private");
+    controller.setScope("all");
+
+    expect(controller.items.map((book) => book.id)).toEqual(["1", "2"]);
+  });
+
+  it("does not hit the api when the scope changes", async () => {
+    const { repository, controller } = makeController();
+
+    controller.init();
+    await repository.succeedReads([aBook("1")]);
+    const callsAfterLoad = repository.readCalls.length;
+    controller.setScope("private");
+
+    expect(repository.readCalls.length).toBe(callsAfterLoad);
+  });
+
+  it("shows the empty message when the active scope has no books", async () => {
+    const { repository, controller } = makeController();
+
+    controller.init();
+    await repository.succeedReads([aBook("1")], []);
+    controller.setScope("private");
+
+    expect(controller.isEmptyHidden).toBe(false);
+  });
+
   it("aborts the in-flight request on dispose", () => {
     const { repository, controller } = makeController();
 

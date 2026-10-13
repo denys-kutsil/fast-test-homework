@@ -1,6 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react";
 
+import { SegmentedControl } from "components/SegmentedControl/SegmentedControl";
 import { useController } from "shared/lib/useController";
 import { AddBookForm } from "features/books/AddBookForm/AddBookForm";
 import { BooksList } from "features/books/BooksList/BooksList";
@@ -12,6 +13,11 @@ export const BooksPage = observer(() => {
   return (
     <section className="books-page">
       <AddBookForm />
+      <SegmentedControl
+        name="books-scope"
+        options={controller.scopeOptions}
+        onChange={controller.setScope}
+      />
       <p hidden={controller.isLoaderHidden}>Loading…</p>
       <p hidden={controller.isErrorHidden} className="error">
         {controller.error}

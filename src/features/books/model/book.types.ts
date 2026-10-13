@@ -15,3 +15,5 @@ export interface NewBook {
   name: string;
   author: string;
 }
+
+export type BooksScope = "all" | "private";
